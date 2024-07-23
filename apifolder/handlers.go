@@ -21,9 +21,8 @@ func AddLike(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sendLike := AddNewLikeFunction{}
-	sendLikeService := AddNewLikeService{AddNewLikeInterface: sendLike}
-	sendLikeService.AddNewLikeFinal(like.Title, like.User, w)
+	dbSvc := NewDbSvc()
+	dbSvc.AddNewLike(like.Title, like.User, w)
 
 	w.WriteHeader(http.StatusCreated)
 }
@@ -46,9 +45,8 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sendComment := AddNewCommentFunction{}
-	sendCommentService := AddNewCommentService{AddNewCommentInterface: sendComment}
-	sendCommentService.AddNewCommentFinal(comment.Title, comment.User, comment.Email, comment.Comment, w)
+	dbSvc := NewDbSvc()
+	dbSvc.AddNewComment(comment.Title, comment.User, comment.Email, comment.Comment, w)
 
 	w.WriteHeader(http.StatusCreated)
 }
@@ -62,9 +60,8 @@ func GetInteractions(w http.ResponseWriter, r *http.Request) {
 
 	title := r.URL.Query().Get("title")
 
-	requestAllInteractions := GetAllInteractionsFunction{}
-	requestAllInteractionsService := GetAllInteractionsService{GetAllInterActionsInterface: requestAllInteractions}
-	likeCount, comments, err := requestAllInteractionsService.GetAllInteractionsFinal(title)
+	dbSvc := NewDbSvc()
+	likeCount, comments, err := dbSvc.GetAllInteractions(title)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

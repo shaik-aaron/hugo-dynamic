@@ -11,31 +11,20 @@ import (
 
 var db *sql.DB
 
-// Function Interfaces
-type AddNewLikeInterface interface {
-	AddNewLike(title string, user string, w http.ResponseWriter)
-}
-
-type AddNewCommentInterface interface {
-	AddNewComment(title string, user string, email string, comment string, w http.ResponseWriter)
-}
-
-type GetAllInterActionsInterface interface {
-	GetAllInteractions(title string) (int, []interactionData, error)
-}
-
+// Structs
 type interactionData struct {
 	User    string `json:"user"`
 	Comment string `json:"comment"`
 }
+type DBSvc struct {
+}
 
-// Structs
-type AddNewLikeFunction struct{}
-type AddNewCommentFunction struct{}
-type GetAllInteractionsFunction struct{}
+func NewDbSvc() *DBSvc {
+	return &DBSvc{}
+}
 
 // Main Functions
-func (a AddNewLikeFunction) AddNewLike(title string, user string, w http.ResponseWriter) {
+func (dbs *DBSvc) AddNewLike(title string, user string, w http.ResponseWriter) {
 	stmt, err := db.Prepare("INSERT INTO likes (title, user) VALUES (?, ?)")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -50,7 +39,7 @@ func (a AddNewLikeFunction) AddNewLike(title string, user string, w http.Respons
 	}
 }
 
-func (ac AddNewCommentFunction) AddNewComment(title string, user string, email string, comment string, w http.ResponseWriter) {
+func (dbs *DBSvc) AddNewComment(title string, user string, email string, comment string, w http.ResponseWriter) {
 	stmt, err := db.Prepare("INSERT INTO comments (title, user, email, comment) VALUES (?, ?, ?, ?)")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -65,7 +54,7 @@ func (ac AddNewCommentFunction) AddNewComment(title string, user string, email s
 	}
 }
 
-func (gal GetAllInteractionsFunction) GetAllInteractions(title string) (int, []interactionData, error) {
+func (dbs *DBSvc) GetAllInteractions(title string) (int, []interactionData, error) {
 	// Query for like count.
 	likeCountQuery := `
 		SELECT COUNT(*) 
@@ -104,31 +93,6 @@ func (gal GetAllInteractionsFunction) GetAllInteractions(title string) (int, []i
 	}
 
 	return likeCount, comments, nil
-}
-
-type AddNewLikeService struct {
-	AddNewLikeInterface AddNewLikeInterface
-}
-
-type AddNewCommentService struct {
-	AddNewCommentInterface AddNewCommentInterface
-}
-
-type GetAllInteractionsService struct {
-	GetAllInterActionsInterface GetAllInterActionsInterface
-}
-
-func (anl AddNewLikeService) AddNewLikeFinal(title string, user string, w http.ResponseWriter) {
-	anl.AddNewLikeInterface.AddNewLike(title, user, w)
-}
-
-func (anc AddNewCommentService) AddNewCommentFinal(title string, user string, email string, comment string, w http.ResponseWriter) {
-	anc.AddNewCommentInterface.AddNewComment(title, user, email, comment, w)
-}
-
-func (gal GetAllInteractionsService) GetAllInteractionsFinal(title string) (int, []interactionData, error) {
-	likeCount, comments, err := gal.GetAllInterActionsInterface.GetAllInteractions(title)
-	return likeCount, comments, err
 }
 
 func InitDB() {
